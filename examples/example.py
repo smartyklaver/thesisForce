@@ -7,7 +7,6 @@ import cv2
 import json
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
 from naviflame.record import record_gestures
 from naviflame.fine_tune import fine_tune_model
 from naviflame.inference import real_time_inference, show_image_for_prediction
