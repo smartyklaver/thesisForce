@@ -33,7 +33,6 @@ def load_config():
 
     return config
 
-
 def main():
     config = load_config()
     # Paths from config
