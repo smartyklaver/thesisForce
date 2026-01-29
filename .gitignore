@@ -1,4 +1,20 @@
-.vscode/
-env10/
-*.pyc
+# Pycache
 __pycache__/
+*.pyc
+
+# Virtual Environments
+.venv/
+env10/
+
+# Unity builds
+NaviFlame_unity_visualizer/
+NaviFlame_visualizer/
+*.exe
+*.dll
+
+# Data and models
+*.pkl
+*.h5
+
+# VSCode
+.vscode/
