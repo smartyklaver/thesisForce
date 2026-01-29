@@ -7,6 +7,7 @@ from mindrove.board_shim import BoardShim, MindRoveInputParams, BoardIds
 import os
 import cv2
 from naviflame.utils import MyMagnWarping, MyScaling
+from naviflame.UDPsender import UDPSender
 
 last_displayed_gesture = None    
 
@@ -60,6 +61,8 @@ def real_time_inference(
     gyro_threshold=500,
     prediction_threshold=0.4,
     batch_size=5,
+    udp_ip="127.0.0.1",   #for udp to unity
+    udp_port=5005
 ):
     """
     Starts real-time inference and yields predictions.
@@ -97,6 +100,9 @@ def real_time_inference(
     stop_event = threading.Event()
     output_queue = Queue()
 
+    # Initialize UDP sender
+    udp_sender = UDPSender(udp_ip, udp_port)
+
     # Preprocessing function
     def preprocess_data(data):
         for i in range(len(data)):
@@ -121,6 +127,8 @@ def real_time_inference(
                     final_output = np.argmax(avg_result)
                     if avg_result[final_output] >= prediction_threshold:
                         output_queue.put((final_output, avg_result))
+                        # Send prediction via UDP
+                        udp_sender.send_data(str(final_output))
                     inference_results.clear()
             except Empty:
                 continue
