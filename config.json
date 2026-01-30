@@ -6,6 +6,6 @@
     "gesture_image_path": "naviflame/gestures",
     "record": false,
     "fine_tune": false,
-    "show_predicted_image": true,
+    "show_predicted_image": false,
     "send_to_socket": true
 }

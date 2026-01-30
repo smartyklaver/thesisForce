@@ -112,8 +112,8 @@ def main():
             filters=filters,
             model_input_len=model_input_len,
             gyro_threshold=500,
-            prediction_threshold=0.4,
-            batch_size=5,
+            prediction_threshold=0.4,   #was 0.4
+            batch_size=3, #was 5
         ):
             #print(f"Prediction: {prediction}, Probabilities: {probabilities.round(4)}")
             print(f"Predicted gesture: {prediction}")
