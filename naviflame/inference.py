@@ -119,16 +119,19 @@ def real_time_inference(
                 input_tensor = data_queue.get(timeout=1)
                 features = feature_extractor.predict(input_tensor, verbose=0)
                 features_scaled = scaler.transform(features)
-                predictions = mlp_model.predict_proba(features_scaled) 
-                inference_results.extend(predictions)
+
+                # For regression the model outputs a scalar force value per sample
+                preds = mlp_model.predict(features_scaled)
+                # Ensure preds is 1D
+                preds = np.ravel(preds)
+                inference_results.extend(preds.tolist())
 
                 if len(inference_results) >= batch_size:
-                    avg_result = np.mean(inference_results, axis=0)
-                    final_output = np.argmax(avg_result)
-                    if avg_result[final_output] >= prediction_threshold:
-                        output_queue.put((final_output, avg_result))
-                        # Send prediction via UDP
-                        udp_sender.send_data(str(final_output))
+                    # Average scalar predictions across the batch
+                    avg_force = float(np.mean(inference_results))
+                    # Put the scalar force into the output queue and send via UDP
+                    output_queue.put((avg_force, None))
+                    udp_sender.send_data(str(avg_force))
                     inference_results.clear()
             except Empty:
                 continue

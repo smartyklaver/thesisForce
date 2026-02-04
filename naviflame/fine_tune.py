@@ -2,7 +2,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from keras.models import Model
 from sklearn.neural_network import MLPClassifier
+from sklearn.neural_network import MLPRegressor
 from sklearn.model_selection import cross_val_score
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+
 import pickle
 import logging
 import numpy as np
@@ -56,37 +59,32 @@ def fine_tune_model(
         pickle.dump(scaler, f)
         logging.info("Scaler saved.")
 
-    # MLP model training
-    mlp = MLPClassifier(
-        hidden_layer_sizes=(32, 16), 
-        max_iter=5000, 
+    # MLP regressor training for continuous force prediction
+    mlp = MLPRegressor(
+        hidden_layer_sizes=(32, 16),
+        max_iter=5000,
         random_state=42,
-        activation='tanh',  
-        solver='lbfgs',  
+        activation='tanh',
+        solver='lbfgs',
         alpha=0.01,
         learning_rate='constant',
     )
-    mlp.fit(X_train_scaled, y_train)
-    mlp_accuracy = mlp.score(X_val_scaled, y_val)
-    logging.info(f"MLP validation accuracy: {mlp_accuracy}")
-    logging.info(f"MLP cross-validation accuracy: {cross_val_score(mlp, X_train_scaled, y_train, cv=5)}")
 
-    # Save the MLP model
+    # Fit regressor (expects continuous target values)
+    mlp.fit(X_train_scaled, y_train)
+
+    # Validation predictions and regression metrics
+    y_pred = mlp.predict(X_val_scaled)
+    mse = mean_squared_error(y_val, y_pred)
+    mae = mean_absolute_error(y_val, y_pred)
+    r2 = r2_score(y_val, y_pred)
+    logging.info(f"MLP validation MSE: {mse:.4f}, MAE: {mae:.4f}, R2: {r2:.4f}")
+
+    # Save the MLP regressor
     with open(mlp_model_path, "wb") as f:
         pickle.dump(mlp, f)
-        logging.info("MLP model saved.")
+        logging.info("MLP regressor saved.")
 
-    if mlp_accuracy < 0.60:
-        response = input(
-            "MLP validation accuracy is below 60%. Would you like to stop and check the device (Yes/No)? "
-        ).strip().lower()
-        if response in ("yes", "y"):
-            logging.info(
-                "Suggested actions: \n- Check device connection.\n- Ensure proper device positioning.\n- Clean the device sensors.\n- Record new data."
-            )
-            logging.info("Exiting the code.")
-            sys.exit(0)  # Terminates the program.
-        else:
-            logging.info("Continuing despite low validation accuracy.")
-
-    return scaler, mlp_accuracy
+    # Return scaler and validation metrics
+    metrics = {"mse": float(mse), "mae": float(mae), "r2": float(r2)}
+    return scaler, metrics
