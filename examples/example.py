@@ -9,6 +9,7 @@ import json
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from naviflame.record import record_gestures
 from naviflame.fine_tune import fine_tune_model
+from naviflame.optimize_model import optimize_mlp
 from naviflame.inference import real_time_inference, show_image_for_prediction
 from naviflame.utils import FilterTypes, BiquadMultiChan, BiquadMultiChan, FilterTypes, send_output_to_socket
 
@@ -45,6 +46,7 @@ def main():
 
     # Flags 
     record = config["record"]
+    optimize_model = config["optimize_model"]
     fine_tune = config["fine_tune"]
     show_predicted_image = config["show_predicted_image"]
     send_to_socket = config["send_to_socket"]
@@ -79,6 +81,24 @@ def main():
     else:
         print("Skipping gesture recording.")
 
+    print("Step 1b: Optimize the model")
+    if optimize_model:
+        with open(data_path, "rb") as f:
+            recorded_data, recorded_labels = pickle.load(f)
+
+        # Run hyperparameter optimization & training (saves model and scalers)
+        optimize_mlp(
+            feature_extractor_path=feature_extractor_path,
+            recorded_data=recorded_data,
+            recorded_labels=recorded_labels,
+            mlp_model_path=mlp_model_path,
+            scaler_path=scaler_path,
+            n_iter_search=20,
+            verbose=0,
+        )
+    else:
+        print("Skipping model optimization.")
+
     # Step 2: Fine-Tune the Model
     print("Step 2: Fine-Tuning the Model")
     
@@ -93,14 +113,6 @@ def main():
             scaler_path=scaler_path,
             mlp_model_path=mlp_model_path,
         )
-        # Support both new regression metrics (dict) and legacy scalar accuracy
-        if isinstance(metrics, dict):
-            print(f"Fine-tuning complete. Validation metrics: MSE={metrics['mse']:.4f}, MAE={metrics['mae']:.4f}, R2={metrics['r2']:.4f}")
-        else:
-            try:
-                print(f"Fine-tuning complete. Validation accuracy: {metrics:.2f}")
-            except Exception:
-                print(f"Fine-tuning complete. Validation result: {metrics}")
     else:
         print("Skipping fine-tuning.")
 
