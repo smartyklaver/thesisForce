@@ -1,6 +1,8 @@
 from typing import Tuple, Dict, Any, Optional
 import logging
 import pickle
+import json
+import os
 
 import numpy as np
 from sklearn.model_selection import train_test_split, RandomizedSearchCV
@@ -32,7 +34,7 @@ def optimize_mlp(
     max_iter: int = 5000,
     n_jobs: int = -1,
     verbose: int = 1,
-) -> Tuple[Any, Dict[str, Any]]:
+):
     """
     Fine-tunes an MLP regressor using features from a pretrained Keras feature extractor.
 
@@ -53,6 +55,7 @@ def optimize_mlp(
     """
     model = load_model(feature_extractor_path, custom_objects={"MyMagnWarping": MyMagnWarping, "MyScaling": MyScaling})
 
+    # Split data into training and validation
     X = np.asarray(recorded_data)
     y = np.asarray(recorded_labels)
 
@@ -124,6 +127,15 @@ def optimize_mlp(
     with open(scaler_path, "wb") as f:
         pickle.dump({"X_scaler": X_scaler, "y_scaler": y_scaler}, f)
         logger.info(f"Saved scalers to {scaler_path}")
+
+    # Save best hyperparameters for fine_tune.py to use as defaults
+    clean_params = {k.replace("mlp__", ""): v for k, v in best_params.items() if not (isinstance(v, bool) and v)}
+    # Convert tuples to lists for JSON serialisation (they will be read back as lists)
+    clean_params_json = {k: list(v) if isinstance(v, tuple) else v for k, v in clean_params.items()}
+    best_params_path = os.path.join(os.path.dirname(mlp_model_path), "mlp_best_params.json")
+    with open(best_params_path, "w") as f:
+        json.dump(clean_params_json, f, indent=2)
+    logger.info(f"Saved best hyperparameters to {best_params_path}")
 
     info = {"metrics": metrics, "best_params": best_params}
     return best_model, info

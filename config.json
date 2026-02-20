@@ -5,8 +5,8 @@
     "scaler_path": "naviflame/models/scaler.pkl",
     "gesture_image_path": "naviflame/gestures",
     "record": false,
-    "optimize_model" : true,
-    "fine_tune": false,
+    "optimize_model" : false,
+    "fine_tune": true,
     "show_predicted_image": false,
     "send_to_socket": false
 }

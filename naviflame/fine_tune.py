@@ -10,6 +10,8 @@ import pickle
 import logging
 import numpy as np
 import sys
+import json
+import os
 from keras.models import load_model
 
 from naviflame.utils import MyMagnWarping, MyScaling
@@ -59,15 +61,32 @@ def fine_tune_model(
         pickle.dump(scaler, f)
         logging.info("Scaler saved.")
 
+    # Load best hyperparameters from optimize_model if available
+    best_params_path = os.path.join(os.path.dirname(mlp_model_path), "mlp_best_params.json")
+    if os.path.exists(best_params_path):
+        with open(best_params_path, "r") as f:
+            saved_params = json.load(f)
+        logging.info(f"Loaded best hyperparameters from {best_params_path}: {saved_params}")
+        hidden_layer_sizes = tuple(saved_params.get("hidden_layer_sizes", [32, 16]))
+        solver = saved_params.get("solver", "lbfgs")
+        alpha = saved_params.get("alpha", 0.01)
+        learning_rate_init = saved_params.get("learning_rate_init", 0.001)
+    else:
+        logging.info("No saved hyperparameters found, using defaults.")
+        hidden_layer_sizes = (32, 16)
+        solver = "lbfgs"
+        alpha = 0.01
+        learning_rate_init = 0.001
+
     # MLP regressor training for continuous force prediction
     mlp = MLPRegressor(
-        hidden_layer_sizes=(32, 16),
+        hidden_layer_sizes=hidden_layer_sizes,
         max_iter=5000,
         random_state=42,
         activation='tanh',
-        solver='lbfgs',
-        alpha=0.01,
-        learning_rate='constant',
+        solver=solver,
+        alpha=alpha,
+        learning_rate_init=learning_rate_init,
     )
 
     # Fit regressor (expects continuous target values)

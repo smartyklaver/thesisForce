@@ -2,6 +2,9 @@
 __pycache__/
 *.pyc
 
+# config.json
+config.json
+
 # Virtual Environments
 .venv/
 env10/
