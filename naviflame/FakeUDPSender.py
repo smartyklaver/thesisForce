@@ -1,12 +1,16 @@
 import time
 from UDPsender import UDPSender
 
+import random
+
 sender = UDPSender(udp_ip="127.0.0.1", udp_port=5005)
+change = 0.1
 
 try:
-    print("Sending 0.5 every second... Press Ctrl+C to stop.")
+    print("Sending random floats")
     while True:
-        sender.send_data("0.5")
+        change = random.randrange(0,30,1) / 10
+        sender.send_data(str(change))
         time.sleep(1)
 except KeyboardInterrupt:
     print("Stopped sending.")
