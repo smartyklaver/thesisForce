@@ -86,14 +86,21 @@ def main():
         with open(data_path, "rb") as f:
             recorded_data, recorded_labels = pickle.load(f)
 
-        scaler, val_accuracy = fine_tune_model(
+        scaler, metrics = fine_tune_model(
             feature_extractor_path=feature_extractor_path,
             recorded_data=recorded_data,
             recorded_labels=recorded_labels,
             scaler_path=scaler_path,
             mlp_model_path=mlp_model_path,
         )
-        print(f"Fine-tuning complete. Validation accuracy: {val_accuracy:.2f}")
+        # Support both new regression metrics (dict) and legacy scalar accuracy
+        if isinstance(metrics, dict):
+            print(f"Fine-tuning complete. Validation metrics: MSE={metrics['mse']:.4f}, MAE={metrics['mae']:.4f}, R2={metrics['r2']:.4f}")
+        else:
+            try:
+                print(f"Fine-tuning complete. Validation accuracy: {metrics:.2f}")
+            except Exception:
+                print(f"Fine-tuning complete. Validation result: {metrics}")
     else:
         print("Skipping fine-tuning.")
 
@@ -115,12 +122,16 @@ def main():
             prediction_threshold=0.4,   #was 0.4
             batch_size=3, #was 5
         ):
-            #print(f"Prediction: {prediction}, Probabilities: {probabilities.round(4)}")
-            print(f"Predicted gesture: {prediction}")
+            # If regression, `probabilities` will be None and `prediction` is a scalar force
+            if probabilities is None:
+                print(f"Predicted force: {prediction:.3f}")
+            else:
+                print(f"Predicted gesture: {prediction}")
+                if show_predicted_image:
+                    show_image_for_prediction(prediction, gesture_image_path, skip_gestures)
+
             if send_to_socket:
                 output_queue.put(prediction)
-            if show_predicted_image:
-                show_image_for_prediction(prediction, gesture_image_path, skip_gestures)
             
     except KeyboardInterrupt:
         print("Real-time inference stopped.")
