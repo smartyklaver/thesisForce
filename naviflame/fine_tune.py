@@ -41,7 +41,15 @@ def fine_tune_model(
     model = load_model(feature_extractor_path, custom_objects={"MyMagnWarping": MyMagnWarping, "MyScaling": MyScaling})
 
     # Split data into training and validation
-    X_train, X_val, y_train, y_val = train_test_split( np.array(recorded_data), np.array(recorded_labels), test_size=0.2, random_state=42)
+    y_labels = np.array(recorded_labels)
+    max_label = np.max(y_labels)
+    if max_label > 0:
+        y_labels = y_labels.astype(np.float32) / max_label
+        logging.info(f"Labels normalized to [0, 1] range by dividing by {max_label}.")
+    else:
+        y_labels = y_labels.astype(np.float32)
+
+    X_train, X_val, y_train, y_val = train_test_split(np.array(recorded_data), y_labels, test_size=0.2, random_state=42)
 
     # Feature extraction
     feature_extractor = Model(inputs=model.input, outputs=model.get_layer("dense_8").output)
