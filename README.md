@@ -3,9 +3,9 @@ Please cite this open software repository using the following cite: M. Berx, M. 
 
 
 # Based on NaviFlame
-This code for continuous force predictions with Mindrove's EMG armband is based on Naviflame.
+This code for continuous force predictions with Mindrove's EMG armband is based on Naviflame: https://github.com/MindRove/NaviFlame
 
-[MindRove](https://mindrove.com/)'s middle-sized AI system for detecting hand and finger motions from wearable sensor data.
+[MindRove](https://mindrove.com/)'s middle-sized Naviflame is an AI system for detecting hand and finger motions from wearable sensor data.
 
 The NaviFlame implements a pipeline for recording, fine-tuning, and performing real-time inference of gesture-based inputs using a MindRove device. The system incorporates signal processing, Deep Learning based feature extraction, MLP-based classification, and real-time visualization.
  <br>
