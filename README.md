@@ -1,3 +1,7 @@
+#Citation
+Please cite this open software repository using the following cite: M. Berx, M. Klaver, J. Sameri, M.Torres Vega, Enhancing Virtual Reality Experiences Using EMG-Based Force Prediction, KU Leuven, 2026.
+
+
 # NaviFlame
 [MindRove](https://mindrove.com/)'s middle-sized AI system for detecting hand and finger motions from wearable sensor data.
 
