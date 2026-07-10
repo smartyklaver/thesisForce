@@ -1,4 +1,4 @@
-#Citation
+# Citation
 Please cite this open software repository using the following cite: M. Berx, M. Klaver, J. Sameri, M.Torres Vega, Enhancing Virtual Reality Experiences Using EMG-Based Force Prediction, KU Leuven, 2026.
 
 
